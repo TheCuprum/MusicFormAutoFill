@@ -111,9 +111,9 @@ class MusicInfoList():
         info = []
         fieldnames = []
         if not os.path.exists(path):
-            open(path, 'w', encoding='utf-8').close()
+            open(path, 'w').close()
         else:
-            with open(path, 'r', newline='', encoding='utf-8') as csvfile:
+            with open(path, 'r', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 fieldnames = reader.fieldnames
                 for info_dict in reader:
@@ -121,7 +121,7 @@ class MusicInfoList():
         return (fieldnames, info)
 
     def wrtie_csv(path: str, fieldnames: List[str] , data: List[Dict]) -> None:
-        with open(path, 'w', newline='', encoding='utf-8') as csvfile:
+        with open(path, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             writer.writerows(data)
