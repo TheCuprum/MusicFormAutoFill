@@ -140,9 +140,10 @@ class MusicInfoList():
             self.unused.clear()
         else:
             music_num = len(self.unused)
-            index_list = random.sample(range(music_num), num)
-            for index in index_list:
+            for i in range(num):
+                index = random.randrange(music_num)
                 selected.append(self.get_one(index))
+                music_num -= 1
         self.save()
         return selected
     
