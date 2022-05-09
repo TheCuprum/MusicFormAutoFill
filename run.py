@@ -18,6 +18,34 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 USED_LIST = './used.csv'
 UNUSED_LIST = './unused.csv'
+NAME_DIR = './name'
+
+class NameProvider():
+    def __init__(self) -> None:
+        self._name_dict = {}
+        self.counter = 1
+        for subdir in os.listdir(NAME_DIR):
+            name, ext = os.path.splitext(subdir)
+            if ext == '.txt':
+                name_list = NameProvider.read_name_file(os.path.join(NAME_DIR, subdir))
+                self._name_dict[name] = name_list
+
+    def read_name_file(path: str) -> List[str]:
+        with open(path, 'r', encoding='utf-8') as name_file:
+            name_list = []
+            for line in name_file:
+                if line != '\n': name_list.append(line.replace('\n', ''))
+        return name_list
+
+    def random_select_name(self, count: int):
+        while True:
+            keys = list(self._name_dict.keys())
+            index_1 = random.randrange(len(keys))
+            key = keys[index_1]
+            index_2 = random.randrange(len(self._name_dict[key]))
+            name = self._name_dict[key][index_2]
+            for i in range(count):
+                yield name
 
 class MusicForm():
     DEFAULT_INPUT = {
@@ -28,8 +56,11 @@ class MusicForm():
         'comment': '',
         'name': ''
     }
+    __NAME_PROVIDER  = NameProvider()
+
     def __init__(self, driver: WebDriver, refresh_url: str):
         self.url = refresh_url
+        self.name_gen = MusicForm.__NAME_PROVIDER.random_select_name(3)
         self.__driver = driver
         self.__driver.implicitly_wait(3)
         self.refresh_element()
@@ -52,30 +83,34 @@ class MusicForm():
         self.target = ''
         self.message = ''
         self.comment = ''
-        self.name = '匿名'
+        self.name = next(self.name_gen)
 
-    def set_song(self, name: str):
+    def set_song(self, name: str) -> 'MusicForm':
         self.song = name
         return self
 
-    def set_artist(self, name: str):
+    def set_artist(self, name: str) -> 'MusicForm':
         self.artist = name
         return self
 
-    def set_target(self, name: str):
+    def set_target(self, name: str) -> 'MusicForm':
         self.target = name
         return self
 
-    def set_message(self, msg: str):
+    def set_message(self, msg: str) -> 'MusicForm':
         self.message = msg
         return self
 
-    def set_comment(self, comment: str):
+    def set_comment(self, comment: str) -> 'MusicForm':
         self.comment = comment
         return self
 
-    def set_name(self, name:str = '匿名'):
-        self.name = name
+    def set_name(self, name:str = None) -> 'MusicForm':
+        self.name = next(self.name_gen) if name is None else name
+        return self
+
+    def set_name_gen(self, count: int = 3) -> 'MusicForm':
+        self.name_gen = count if count > 0 else 0
         return self
 
     def submit_form(self, reset: bool = False):
@@ -166,6 +201,9 @@ def parse_args(args: List[str]) -> argparse.Namespace:
 if __name__ == '__main__':
     config = parse_args(sys.argv[1:])
 
+    driver = webdriver.Edge(service=Service(EdgeChromiumDriverManager().install()))
+    form = MusicForm(driver, 'http://jsform2.com/web/formview/61357bc475a03c55d035e26e')
+
     music_list = MusicInfoList(UNUSED_LIST, USED_LIST)
 
     if config.random:
@@ -173,9 +211,6 @@ if __name__ == '__main__':
     else:
         selected_list = list(music_list.get_one(0) for i in range(config.num))
         music_list.save()
-
-    driver = webdriver.Edge(service=Service(EdgeChromiumDriverManager().install()))
-    form = MusicForm(driver, 'http://jsform2.com/web/formview/61357bc475a03c55d035e26e')
     try:
         for music_info in selected_list:
             # MUSIC, ARTIST, LINK, MESSAGE, no NAME & TARGET
