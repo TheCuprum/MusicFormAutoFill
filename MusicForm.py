@@ -3,6 +3,8 @@ import sys
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
+from form_resource import NameProvider
+
 class MusicForm():
     DEFAULT_INPUT = {
         'song': '',
@@ -12,8 +14,11 @@ class MusicForm():
         'comment': '',
         'name': ''
     }
+    __NAME_PROVIDER  = NameProvider()
+
     def __init__(self, driver: WebDriver, refresh_url: str):
         self.url = refresh_url
+        self.name_gen = MusicForm.__NAME_PROVIDER.random_select_name(3)
         self.__driver = driver
         self.__driver.implicitly_wait(3)
         self.refresh_element()
@@ -36,30 +41,34 @@ class MusicForm():
         self.target = ''
         self.message = ''
         self.comment = ''
-        self.name = ''
+        self.name = next(self.name_gen)
 
-    def set_song(self, name: str):
+    def set_song(self, name: str) -> 'MusicForm':
         self.song = name
         return self
 
-    def set_artist(self, name: str):
+    def set_artist(self, name: str) -> 'MusicForm':
         self.artist = name
         return self
 
-    def set_target(self, name: str):
+    def set_target(self, name: str) -> 'MusicForm':
         self.target = name
         return self
 
-    def set_message(self, msg: str):
+    def set_message(self, msg: str) -> 'MusicForm':
         self.message = msg
         return self
 
-    def set_comment(self, comment: str):
+    def set_comment(self, comment: str) -> 'MusicForm':
         self.comment = comment
         return self
 
-    def set_name(self, name:str = '匿名'):
-        self.name = name
+    def set_name(self, name:str = None) -> 'MusicForm':
+        self.name = next(self.name_gen) if name is None else name
+        return self
+
+    def set_name_gen(self, count: int = 3) -> 'MusicForm':
+        self.name_gen = count if count > 0 else 0
         return self
 
     def submit_form(self, reset: bool = False):
