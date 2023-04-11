@@ -1,6 +1,8 @@
+import time
 import sys
 
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 
 from form_resource import NameProvider
@@ -27,13 +29,13 @@ class MusicForm():
     def refresh_element(self):
         self.__driver.get(self.url)
         self.__form = self.__driver.find_element(By.CLASS_NAME, 'fields')
-        self._song_field = self.__form.find_element(By.NAME, 'F20')
-        self._artist_field = self.__form.find_element(By.NAME, 'F3')
-        self._target_field = self.__form.find_element(By.NAME, 'F9')
-        self._message_field = self.__form.find_element(By.NAME, 'F1')
-        self._comment_field = self.__form.find_element(By.NAME, 'F2')
-        self._name_field = self.__form.find_element(By.NAME, 'F4')
-        self._submit_button = self.__form.find_element(By.ID, 'btnSubmit')
+        self._song_field = self.__form.find_element(By.NAME, 'F1')
+        self._artist_field = self.__form.find_element(By.NAME, 'F2')
+        self._target_field = self.__form.find_element(By.NAME, 'F3')
+        self._message_field = self.__form.find_element(By.NAME, 'F4')
+        self._comment_field = self.__form.find_element(By.NAME, 'F5')
+        self._name_field = self.__form.find_element(By.NAME, 'F6')
+        self._submit_button = self.__driver.find_element(By.ID, 'btnSubmit')
 
     def reset_field(self):
         self.song = ''
@@ -71,7 +73,7 @@ class MusicForm():
         self.name_gen = count if count > 0 else 0
         return self
 
-    def submit_form(self, reset: bool = False):
+    def submit_form(self, reset: bool = False, delay: int = 0):
         if self.song == '' and self.artist == '':
             print('Required field not set: song and artist', file=sys.stderr)
             return
@@ -89,7 +91,11 @@ class MusicForm():
         self._comment_field.send_keys(self.comment)
         self._name_field.send_keys(self.name)
 
+        if delay > 0:
+            time.sleep(delay)
+
         self._submit_button.click()
         if reset:
             self.reset_field()
-        self.refresh_element()
+        else:
+            self.refresh_element()

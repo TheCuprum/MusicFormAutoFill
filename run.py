@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
             index += 1
             if config.interval > 0:
-                time.sleep((random.random() + 1.0) / 2)
+                time.sleep(((random.random() + 1.0) / 2) * config.interval)
 
         except Exception as e:
             traceback.print_exc(e)

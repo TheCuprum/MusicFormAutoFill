@@ -3,9 +3,17 @@ import os
 import random
 from typing import List, Tuple, Dict
 
+import chardet
+
 USED_LIST = './used.csv'
 UNUSED_LIST = './unused.csv'
 NAME_DIR = './name'
+
+def get_encoding(path: str) -> str:
+    with open(path, 'rb') as testfile:
+        result = chardet.detect(testfile.read())
+        encode_type = 'utf-8' if result.get('encoding') is None else result.get('encoding')
+    return encode_type
 
 class NameProvider():
     def __init__(self, name_dir: str = NAME_DIR) -> None:
@@ -18,7 +26,8 @@ class NameProvider():
                 self._name_dict[name] = name_list
 
     def _read_name_file(path: str) -> List[str]:
-        with open(path, 'r', encoding='utf-8') as name_file:
+        encode_type = get_encoding(path)
+        with open(path, 'r', encoding=encode_type) as name_file:
             name_list = []
             for line in name_file:
                 if line != '\n': name_list.append(line.replace('\n', ''))
@@ -44,9 +53,10 @@ class MusicInfoList():
         info = []
         fieldnames = []
         if not os.path.exists(path):
-            open(path, 'w').close()
+            open(path, 'w', encoding='utf-8').close()
         else:
-            with open(path, 'r', newline='') as csvfile:
+            encode_type = get_encoding(path)
+            with open(path, 'r', newline='', encoding=encode_type) as csvfile:
                 reader = csv.DictReader(csvfile)
                 fieldnames = reader.fieldnames
                 for info_dict in reader:
@@ -54,7 +64,8 @@ class MusicInfoList():
         return (fieldnames, info)
 
     def _wrtie_csv(path: str, fieldnames: List[str] , data: List[Dict]) -> None:
-        with open(path, 'w', newline='') as csvfile:
+        encode_type = get_encoding(path)
+        with open(path, 'w', newline='', encoding=encode_type) as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
             writer.writerows(data)
